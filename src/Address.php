@@ -15,26 +15,23 @@ class Address
     /**
      * Author: JiaMeng <666@majiameng.com>
      */
-    public function __construct()
-    {
-        $this->area = $this->loadAreaArray();
+    public function __construct(){
     }
 
     /**
      * @param $list
      * @return Address
      */
-    public function setAreaArray($list)
+    public function setArea($list)
     {
         $this->area = $list;
         return $this;
     }
     /**
-     * @param $list
      * @return mixed
      * Author: JiaMeng <666@majiameng.com>
      */
-    public function getAreaArray($list)
+    public function getArea()
     {
         return $this->area;
     }
@@ -57,6 +54,10 @@ class Address
      */
     public function parse($string, $user = true)
     {
+        if(empty($this->area)){
+            $this->area = $this->loadAreaArray();
+        }
+
         if ($user) {
             $decompose = $this->decompose($string);
             $re = $decompose;
