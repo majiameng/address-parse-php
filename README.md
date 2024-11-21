@@ -27,7 +27,7 @@ array(7) {
   string(6) "617000"
   ["name"]=>
   string(6) "张三"
-  ["addr"]=>
+  ["address"]=>
   string(56) "成都市武侯区美领馆路11号附2号 136-3333-6666"
   ["province"]=>
   string(9) "四川省"

@@ -62,10 +62,10 @@ class Address
             $decompose = $this->decompose($string);
             $re = $decompose;
         } else {
-            $re['addr'] = $string;
+            $re['address'] = $string;
         }
 
-        $fuzz = $this->fuzz($re['addr']);
+        $fuzz = $this->fuzz($re['address']);
         $parse = $this->parseAddressDetail($fuzz['a1'], $fuzz['a2'], $fuzz['a3']);
 
         $re['province'] = $parse['province'];
@@ -128,7 +128,7 @@ class Address
             $string = trim(str_replace($compose['name'], '', $string));
         }
 
-        $compose['addr'] = $string;
+        $compose['address'] = $string;
 
         return $compose;
     }
@@ -251,7 +251,7 @@ class Address
         $r = array();
         if ($a3 != '') {
             $area3_matches = array();
-            foreach ($this->area['district'] as $id => $v) {
+            foreach ($this->area['region'] as $id => $v) {
                 if (mb_strpos($v['name'], $a3) !== false) {
                     $area3_matches[$id] = $v;
                 }
