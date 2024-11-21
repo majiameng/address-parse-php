@@ -1,0 +1,24 @@
+{
+    "name": "tinymeng/intelligent-parse",
+    "description": "Integrate third-party logins",
+    "keywords": [
+        "tinymeng", "tools","address-parse","php"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "JiaMeng Ma",
+            "email": "666@majiameng.com",
+            "homepage": "http://majiameng.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "tinymeng\\parse\\": "src"
+        },
+        "files": []
+    }
+}
