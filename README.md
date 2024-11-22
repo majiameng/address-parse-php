@@ -13,6 +13,8 @@
 ## 1.安装
 > composer require tinymeng/intelligent-parse  -vvv
 
+PHP 请安装并开启 mbstring 扩展
+
 ### 使用
 so easy；
 ```php
