@@ -24,21 +24,31 @@ var_dump($res);
 ```
 结果为：
 ```
-array(7) {
+array(12) {
+  ["province_id"]=>
+  int(510000)
+  ["province"]=>
+  string(9) "四川省"
+  ["city_id"]=>
+  int(510100)
+  ["city"]=>
+  string(9) "成都市"
+  ["region_id"]=>
+  int(0)
+  ["region"]=>
+  string(9) "成都市"
+  ["street"]=>
+  string(24) "美领馆路11号附2号"
   ["postcode"]=>
   string(6) "617000"
   ["name"]=>
   string(6) "张三"
+  ["mobile"]=>
+  string(11) "13633336666"
+  ["idcard"]=>
+  string(0) ""
   ["address"]=>
-  string(56) "成都市武侯区美领馆路11号附2号 136-3333-6666"
-  ["province"]=>
-  string(9) "四川省"
-  ["city"]=>
-  string(9) "成都市"
-  ["region"]=>
-  string(9) "武侯区"
-  ["street"]=>
-  string(38) "美领馆路11号附2号 136-3333-6666"
+  string(42) "成都市成都市美领馆路11号附2号"
 }
 ```
 
