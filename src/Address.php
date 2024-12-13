@@ -278,7 +278,6 @@ class Address
                     $regionMatches[$id] = $v;
                 }
             }
-            $regionMatches = [];
 
             if (!empty($regionMatches) && count($regionMatches) > 1) {
                 if ($result['city']) {

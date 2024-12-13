@@ -26,11 +26,11 @@ var_dump($res);
 ```
 array(12) {
   ["province_id"]=>
-  int(0)
+  int(510000)
   ["province"]=>
-  string(0) ""
+  string(9) "四川省"
   ["city_id"]=>
-  int(0)
+  int(510100)
   ["city"]=>
   string(9) "成都市"
   ["region_id"]=>
