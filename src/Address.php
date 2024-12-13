@@ -14,25 +14,42 @@ class Address
     private $city;
     private $region;
 
+    /**
+     * __construct
+     */
     public function __construct()
     {
         $this->loadArea();
     }
 
-    public function setArea($list)
+    /**
+     * @param $province
+     * @param $city
+     * @param $region
+     * @return $this
+     */
+    public function setArea($province=[],$city=[],$region=[])
     {
-        $this->area = $list;
+        if(!empty($province)) $this->province = $province;
+        if(!empty($city)) $this->city = $city;
+        if(!empty($region)) $this->region = $region;
         return $this;
     }
 
+    /**
+     * @return array
+     */
     public function getArea()
     {
-        return $this->area;
+        return [
+            'province'=>$this->province,
+            'city'=>$this->city,
+            'region'=>$this->region,
+        ];
     }
 
     /**
      * Author: JiaMeng <666@majiameng.com>
-     * @throws \Exception
      */
     private function loadArea()
     {
@@ -50,7 +67,19 @@ class Address
      */
     public function parse($string, $user = true)
     {
-        $result = [];
+        $result = [
+            'province_id'   => 0,// 省编码
+            'province'      => '',// 省
+            'city_id'       => 0,// 市编码
+            'city'          => '',// 市
+            'region_id'     => 0,// 区编码
+            'region'        => '',// 区
+            'address'       => '',// 地址
+            'street'        => '',// 街道
+            'postcode'      => '',// 邮政编码
+            'name'          => '',// 名字
+            'idcard'        => '',// 身份证号
+        ];
         if ($user) {
             $decompose = $this->decompose($string);
             $result = array_merge($result, $decompose);
@@ -58,14 +87,11 @@ class Address
             $result['address'] = $string;
         }
 
-        $fuzz = $this->fuzz($result['address']);
-        $parse = $this->parseAddressDetail($fuzz['province'], $fuzz['city'], $fuzz['region']);
-
-        $result['province'] = $parse['province'] ?? '';
-        $result['city'] = $parse['city'] ?? '';
-        $result['region'] = $parse['region'] ?? '';
-        $result['street'] = $fuzz['street'] ?? '';
-
+        // 根据统计规律分析出二三级地址+街道地址
+        $ruleAnalysisData = $this->ruleAnalysis($result['address']);
+        $result = array_merge($result, $ruleAnalysisData);
+        // 智能解析出省市区
+        $result = $this->parseAddressDetail($result);
         // 清理街道信息
         $result['street'] = str_replace(
             [$result['region'], $result['city'], $result['province']],
@@ -84,28 +110,26 @@ class Address
      */
     private function decompose($string)
     {
-
         $compose = array();
-
         $search = array('收货地址', '详细地址', '地址', '收货人', '收件人', '收货', '所在地区', '邮编', '电话', '手机号码','身份证号码', '身份证号', '身份证', '：', ':', '；', ';', '，', ',', '。');
         $replace = array(' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
         $string = str_replace($search, $replace, $string);
         $string = preg_replace('/\s{1,}/', ' ', trim($string));
 
-
-        // 匹配身份证、手机号和邮政编码
+        // 匹配身份证
         preg_match('/\d{18}|\d{17}X/i', $string, $match);
         if ($match) {
-            $compose['idn'] = strtoupper($match[0]);
+            $compose['idcard'] = strtoupper($match[0]);
             $string = str_replace($match[0], '', $string);
         }
 
+        // 匹配手机号
         preg_match('/\d{7,11}[\-_]\d{2,6}|\d{7,11}|\d{3,4}-\d{6,8}/', $string, $match);
         if ($match && $match[0]) {
             $compose['mobile'] = $match[0];
             $string = str_replace($match[0], '', $string);
         }
-
+        // 匹配邮政编码
         preg_match('/\d{6}/', $string, $match);
         if ($match && $match[0]) {
             $compose['postcode'] = $match[0];
@@ -113,7 +137,6 @@ class Address
         }
 
         $string = trim(preg_replace('/ {2,}/', ' ', $string));
-
         $split_arr = explode(' ', $string);
         if (count($split_arr) > 1) {
             $compose['name'] = $split_arr[0];
@@ -126,18 +149,16 @@ class Address
         }
 
         $compose['address'] = trim($string);
-        var_dump($compose);die;
-
         return $compose;
     }
 
     /**
-     * 根据统计规律分析出二三级地址
+     * 根据统计规律分析出二三级地址+街道地址
      * Author: JiaMeng <666@majiameng.com>
      * @param $addr
      * @return array
      */
-    private function fuzz($addr)
+    private function ruleAnalysis($addr)
     {
         $addr_origin = $addr;
         $addr = str_replace([' ', ','], ['', ''], $addr);
@@ -231,69 +252,61 @@ class Address
     /**
      * 智能解析出省市区+街道地址
      * Author: JiaMeng <666@majiameng.com>
-     * @param $province
-     * @param $city
-     * @param $region
      * @return array
      */
-    private function parseAddressDetail($province, $city, $region)
+    private function parseAddressDetail($result)
     {
-        $result = [
-            'province' => '',
-            'city' => '',
-            'region' => ''
-        ];
-        if ($region != '') {
-            $area3_matches = [];
+        if ($result['region'] != '') {
+            $regionMatches = [];
             foreach ($this->region as $id => $v) {
-                if (mb_strpos($v['name'], $region) !== false) {
-                    $area3_matches[$id] = $v;
+                if (mb_strpos($v['name'], $result['region']) !== false) {
+                    $regionMatches[$id] = $v;
                 }
             }
+            $regionMatches = [];
 
-            if ($area3_matches && count($area3_matches) > 1) {
-                if ($city) {
+            if (!empty($regionMatches) && count($regionMatches) > 1) {
+                if ($result['city']) {
+                    $cityMatches = [];
                     foreach ($this->city as $id => $v) {
-                        if (mb_strpos($v['name'], $city) !== false) {
-                            $area2_matches[$id] = $v;
+                        if (mb_strpos($v['name'], $result['city']) !== false) {
+                            $cityMatches[$id] = $v;
                         }
                     }
 
-                    if ($area2_matches) {
-                        foreach ($area3_matches as $id => $v) {
-
-                            if (isset($area2_matches[$v['pid']])) {
-                                $result['city'] = $area2_matches[$v['pid']]['name'];
+                    if (!empty($cityMatches)) {
+                        foreach ($regionMatches as $v) {
+                            if (isset($cityMatches[$v['pid']])) {
+                                $result['city_id'] = $cityMatches[$v['pid']]['id'];
+                                $result['city'] = $cityMatches[$v['pid']]['name'];
+                                $result['region_id'] = $v['id'];
                                 $result['region'] = $v['name'];
-                                $province_id = $area2_matches[$v['pid']]['pid'];
-                                $result['province'] = $this->province[$province_id]['name'];
+                                $result['province_id'] = $cityMatches[$v['pid']]['pid'];
+                                $result['province'] = $this->province[$result['province_id']]['name'];
                             }
                         }
                     }
-                } else {
-                    $result['region'] = $region;
                 }
-            } else if ($area3_matches && count($area3_matches) == 1) {
-                foreach ($area3_matches as $id => $v) {
-                    $city_id = $v['pid'];
+            } else if ($regionMatches && count($regionMatches) == 1) {
+                foreach ($regionMatches as $v) {
+                    $result['city_id'] = $v['pid'];
                     $result['region'] = $v['name'];
                 }
-                $city = $this->city[$city_id];
+                $city = $this->city[$result['city_id']];
                 $province = $this->province[$city['pid']];
-
+                $result['province_id'] = $city['pid'];
                 $result['province'] = $province['name'];
                 $result['city'] = $city['name'];
-            } else if (empty($area3_matches) && $city == $region) {
-
+            } else if (empty($regionMatches) && $result['city'] == $result['region']) {
                 foreach ($this->city as $id => $v) {
-                    if (mb_strpos($v['name'], $city) !== false) {
-                        $area2_matches[$id] = $v;
-                        $province_id = $v['pid'];
+                    if (mb_strpos($v['name'], $result['city']) !== false) {
+                        $result['city_id'] = $v['id'];
                         $result['city'] = $v['name'];
+                        $result['province_id'] = $v['pid'];
+                        $result['province'] = $this->province[$result['province_id']]['name'];
+                        break;
                     }
                 }
-
-                $result['province'] = $this->province[$province_id]['name'];
             }
         }
         return $result;
