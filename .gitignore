@@ -2,11 +2,8 @@
 .idea/*
 composer.lock
 composer.phar
-vendor/
-test.php
-build/
 phpunit.xml
 *.DS_store
 .php_cs.cache
-docs/api
-cache/
+example/
+vendor/
