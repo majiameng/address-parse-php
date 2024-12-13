@@ -26,17 +26,17 @@ var_dump($res);
 ```
 array(12) {
   ["province_id"]=>
-  int(510000)
+  int(0)
   ["province"]=>
-  string(9) "四川省"
+  string(0) ""
   ["city_id"]=>
-  int(510100)
+  int(0)
   ["city"]=>
   string(9) "成都市"
   ["region_id"]=>
   int(0)
   ["region"]=>
-  string(9) "成都市"
+  string(9) "武侯区"
   ["street"]=>
   string(24) "美领馆路11号附2号"
   ["postcode"]=>
@@ -48,13 +48,6 @@ array(12) {
   ["idcard"]=>
   string(0) ""
   ["address"]=>
-  string(42) "成都市成都市美领馆路11号附2号"
+  string(42) "成都市武侯区美领馆路11号附2号"
 }
 ```
-
-### Star History
-[![Star History Chart](https://api.star-history.com/svg?repos=majiameng/address-parse-php&type=Date)](https://star-history.com/#majiameng/address-parse-php&Date)
-
-
-### 致谢
-后来在网上我发现一些作者基于我的识别逻辑，写了js等版本，方便了大家，但是很少注明参考链接。
