@@ -94,6 +94,7 @@ class Address
             ['', '', ''],
             $result['street']
         );
+        $result['address'] = $result['province'] . $result['city'] . $result['region'] . $result['street'];
 
         return $result;
     }
@@ -175,8 +176,8 @@ class Address
      */
     private function ruleAnalysis($addr)
     {
-        $addr_origin = $addr;
         $addr = str_replace([' ', ','], ['', ''], $addr);
+        $addr_origin = $addr;
         $addr = str_replace('自治区', '省', $addr);
         $addr = str_replace('自治州', '州', $addr);
 
