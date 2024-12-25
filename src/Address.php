@@ -75,23 +75,25 @@ class Address
             'region_id'     => 0,// 区编码
             'region'        => '',// 区
             'street'        => '',// 街道
+            'address'       => $string,// 地址
         ];
-        if ($user) {
-            $decompose = $this->decompose($string);
-            $result = array_merge($result, $decompose);
-        } else {
-            $result['address'] = $string;
-        }
 
         // 根据统计规律分析出二三级地址+街道地址
         $ruleAnalysisData = $this->ruleAnalysis($result['address']);
         $result = array_merge($result, $ruleAnalysisData);
         // 智能解析出省市区
         $result = $this->parseAddressDetail($result);
+
+        // 解析用户信息
+        if ($user) {
+            $decompose = $this->decompose($result,$string);
+            $result = array_merge($result, $decompose);
+        }
+
         // 清理街道信息
         $result['street'] = str_replace(
-            [$result['region'], $result['city'], $result['province']],
-            ['', '', ''],
+            [$result['region'], $result['city'], $result['province'],$result['name'],$result['mobile'],$result['idcard'],$result['postcode']],
+            '',
             $result['street']
         );
         $result['address'] = $result['province'] . $result['city'] . $result['region'] . $result['street'];
@@ -102,10 +104,11 @@ class Address
     /**
      * 分离手机号(座机)，身份证号，姓名等用户信息
      * Author: JiaMeng <666@majiameng.com>
+     * @param $result
      * @param $string
-     * @return array
+     * @return string[]
      */
-    private function decompose($string)
+    private function decompose($result,$string)
     {
         $compose = [
             'postcode'      => '',// 邮政编码
@@ -114,6 +117,13 @@ class Address
             'idcard'        => '',// 身份证号
             'address'       => '',// 地址
         ];
+
+        // 清除省市
+        $addressArray = [];
+        if(!empty($result['province'])) $addressArray[] = $result['province'];
+        if(!empty($result['city'])) $addressArray[] = $result['city'];
+        if(!empty($result['region'])) $addressArray[] = $result['region'];
+        $string = str_replace($addressArray, '', $string);
 
         //1. 过滤掉收货地址中的常用说明字符，排除干扰词
         $string = preg_replace(
@@ -305,6 +315,7 @@ class Address
             } else if ($regionMatches && count($regionMatches) == 1) {
                 foreach ($regionMatches as $v) {
                     $result['city_id'] = $v['pid'];
+                    $result['region_id'] = $v['id'];
                     $result['region'] = $v['name'];
                 }
                 $city = $this->city[$result['city_id']];
